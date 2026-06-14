@@ -41,7 +41,7 @@ function getOAuthClient() {
 
 // Gmail metadata scope — non-sensitive, no verification warning, works for any Google account
 const GOOGLE_SCOPES = [
-  "https://www.googleapis.com/auth/gmail.metadata",
+  "https://www.googleapis.com/auth/gmail.readonly",
   "https://www.googleapis.com/auth/userinfo.email",
   "https://www.googleapis.com/auth/userinfo.profile",
 ];
