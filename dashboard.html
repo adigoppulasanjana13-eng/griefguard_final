@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GriefGuard — Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:         #080C14;
+    --surface:    #0E1525;
+    --surface2:   #111827;
+    --surface3:   #0A1120;
+    --border:     rgba(255,255,255,0.07);
+    --border2:    rgba(255,255,255,0.11);
+    --teal:       #00C9A7;
+    --teal-dim:   rgba(0,201,167,0.1);
+    --blue:       #4FC3F7;
+    --blue-dim:   rgba(79,195,247,0.1);
+    --amber:      #F59E0B;
+    --amber-dim:  rgba(245,158,11,0.1);
+    --red:        #EF4444;
+    --red-dim:    rgba(239,68,68,0.1);
+    --green:      #22C55E;
+    --green-dim:  rgba(34,197,94,0.1);
+    --msblue:     #0078D4;
+    --text:       #E8EDF5;
+    --sub:        #94A3B8;
+    --muted:      #4A5A72;
+    --mono:       'JetBrains Mono', monospace;
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    margin: 0;
+    min-height: 100vh;
+  }
+
+  .topbar {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(8,12,20,0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    height: 60px;
+    gap: 12px;
+  }
+  .logo {
+    display: flex; align-items: center; gap: 9px;
+    font-size: 17px; font-weight: 700; letter-spacing: -0.3px;
+    text-decoration: none; color: var(--text);
+  }
+  .logo-icon {
+    width: 32px; height: 32px;
+    background: var(--teal-dim);
+    border: 1px solid var(--teal);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px;
+  }
+  .logo span { color: var(--teal); }
+
+  .topbar-right { display: flex; align-items: center; gap: 12px; }
+  .user-email { font-size: 13px; color: var(--sub); display: none; }
+  @media (min-width: 600px) { .user-email { display: block; } }
+
+  .btn-sm {
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    color: var(--text);
+    padding: 7px 14px; border-radius: 8px;
+    font-size: 13px; font-weight: 500;
+    cursor: pointer; font-family: inherit;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .btn-sm:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.18); }
+
+  .main { max-width: 780px; margin: 0 auto; padding: 32px 20px 60px; }
+
+  .section-label {
+    font-family: var(--mono);
+    font-size: 10px; letter-spacing: 0.1em;
+    text-transform: uppercase; font-weight: 500;
+    margin-bottom: 10px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 14px;
+    padding: 24px;
+    margin-bottom: 16px;
+  }
+  .card-title { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+  .card-sub { font-size: 13px; color: var(--sub); line-height: 1.6; margin-bottom: 20px; }
+
+  .btn-scan {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: linear-gradient(135deg, #00B896, #00D4AA);
+    color: #000; border: none; font-family: inherit;
+    font-size: 14px; font-weight: 700;
+    padding: 12px 22px; border-radius: 10px; cursor: pointer;
+    transition: opacity 0.15s, transform 0.1s, box-shadow 0.15s;
+    box-shadow: 0 4px 16px rgba(0,201,167,0.25);
+  }
+  .btn-scan:hover { opacity: 0.92; transform: translateY(-1px); box-shadow: 0 6px 24px rgba(0,201,167,0.35); }
+  .btn-scan:active { transform: translateY(0); }
+  .btn-scan:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+  .status-msg {
+    margin-top: 14px; font-size: 13px; color: var(--sub);
+    display: flex; align-items: center; gap: 8px; min-height: 22px;
+  }
+  .loading-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--teal);
+    animation: pulse 1.2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%,100% { opacity:1; transform:scale(1); }
+    50% { opacity:0.35; transform:scale(0.75); }
+  }
+
+  .findings-header { font-size: 15px; font-weight: 700; margin-bottom: 14px; }
+
+  .finding {
+    background: var(--surface3);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px; margin-bottom: 10px;
+    transition: border-color 0.15s;
+  }
+  .finding:hover { border-color: var(--border2); }
+  .finding:last-child { margin-bottom: 0; }
+  .finding-meta {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 11px; color: var(--muted);
+    font-family: var(--mono); margin-bottom: 6px; flex-wrap: wrap;
+  }
+  .finding-subject { font-size: 14px; font-weight: 600; margin-bottom: 5px; }
+  .finding-snippet { font-size: 12px; color: var(--sub); line-height: 1.55; }
+
+  .badge {
+    display: inline-block;
+    font-size: 10px; font-weight: 700;
+    font-family: var(--mono);
+    padding: 2px 8px; border-radius: 5px;
+    letter-spacing: 0.04em; text-transform: uppercase;
+  }
+  .badge.high   { background: var(--red-dim);   color: var(--red);   border: 1px solid rgba(239,68,68,0.25); }
+  .badge.medium { background: var(--amber-dim);  color: var(--amber); border: 1px solid rgba(245,158,11,0.25); }
+  .badge.low    { background: var(--green-dim);  color: var(--green); border: 1px solid rgba(34,197,94,0.25); }
+  .badge.info   { background: var(--blue-dim);   color: var(--blue);  border: 1px solid rgba(79,195,247,0.25); }
+
+  .empty { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 14px; line-height: 1.6; }
+  .empty .empty-icon { font-size: 32px; margin-bottom: 12px; }
+
+  .section-divider { display: flex; align-items: center; gap: 12px; margin: 28px 0 16px; }
+  .section-divider-line { flex: 1; height: 1px; background: var(--border); }
+  .section-divider-label {
+    font-family: var(--mono); font-size: 10px;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--muted); white-space: nowrap;
+  }
+
+  .ms-connect { background: var(--surface); border: 1px solid var(--border2); border-radius: 14px; padding: 24px; margin-bottom: 16px; }
+  .ms-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; color: var(--blue); text-transform: uppercase; font-weight: 700; margin-bottom: 8px; }
+  .ms-status { font-size: 13px; color: var(--sub); margin-bottom: 16px; line-height: 1.5; }
+
+  .btn-ms {
+    display: inline-flex; align-items: center; gap: 9px;
+    background: var(--msblue); color: #fff;
+    padding: 11px 18px; border-radius: 9px;
+    font-weight: 600; font-size: 13px;
+    text-decoration: none;
+    transition: background 0.15s, transform 0.1s;
+    border: none; font-family: inherit; cursor: pointer;
+  }
+  .btn-ms:hover { background: #006BBE; transform: translateY(-1px); }
+
+  .pipeline { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+  .pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 13px; border-radius: 20px;
+    background: var(--surface2); border: 1px solid var(--border2);
+    font-size: 12px; font-weight: 600; color: var(--muted);
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .pill.running { color: var(--teal); border-color: var(--teal); }
+  .pill.done    { color: var(--green); border-color: var(--green); }
+  .pill.error   { color: var(--red); border-color: var(--red); }
+  .pill-arrow { color: var(--muted); font-size: 12px; }
+
+  .agent-card { background: var(--surface); border: 1px solid var(--border2); border-radius: 14px; padding: 20px 22px; margin-bottom: 12px; }
+  .agent-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 700; margin-bottom: 12px; }
+
+  .btn-agents {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: linear-gradient(135deg, #0078D4, #005fa3);
+    color: #fff; border: none; font-family: inherit;
+    font-size: 14px; font-weight: 700;
+    padding: 12px 22px; border-radius: 10px; cursor: pointer;
+    margin-bottom: 20px;
+    transition: opacity 0.15s, transform 0.1s;
+    box-shadow: 0 4px 16px rgba(0,120,212,0.25);
+  }
+  .btn-agents:hover { opacity: 0.9; transform: translateY(-1px); }
+
+  .foundry-label {
+    font-family: var(--mono); font-size: 10px;
+    letter-spacing: 0.1em; color: var(--blue);
+    text-transform: uppercase; font-weight: 700;
+    margin-bottom: 12px;
+    display: flex; align-items: center; gap: 6px;
+  }
+
+  .text-teal  { color: var(--teal); }
+  .text-red   { color: var(--red); }
+  .text-green { color: var(--green); }
+  .text-amber { color: var(--amber); }
+  .text-blue  { color: var(--blue); }
+  .text-sub   { color: var(--sub); }
+  .text-muted { color: var(--muted); }
+  .text-sm    { font-size: 13px; }
+  .text-xs    { font-size: 12px; }
+  .lh         { line-height: 1.6; }
+  .mb4  { margin-bottom: 4px; }
+  .mb8  { margin-bottom: 8px; }
+  .mb10 { margin-bottom: 10px; }
+  .mb12 { margin-bottom: 12px; }
+  .fw6  { font-weight: 600; }
+  .mono { font-family: var(--mono); font-size: 10px; }
+
+  @media (max-width: 600px) {
+    .main { padding: 20px 14px 50px; }
+    .card, .ms-connect, .agent-card { padding: 18px 16px; }
+  }
+</style>
+</head>
+<body>
+
+  <header class="topbar">
+    <a class="logo" href="#">
+      <div class="logo-icon">🛡️</div>
+      Grief<span>Guard</span>
+    </a>
+    <div class="topbar-right">
+      <span class="user-email" id="userEmail"></span>
+      <button class="btn-sm" onclick="logout()">Log out</button>
+    </div>
+  </header>
+
+  <main class="main">
+
+    <div class="section-label text-teal">Gmail Security Scan</div>
+    <div class="card">
+      <div class="card-title">Real Inbox Security Scan</div>
+      <div class="card-sub">Scans your actual Gmail (read-only) for security alert emails: new sign-ins, suspicious activity, password reset attempts. Nothing is modified or sent.</div>
+      <button class="btn-scan" id="scanBtn" onclick="runScan()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        Scan My Inbox
+      </button>
+      <div class="status-msg" id="status"></div>
+    </div>
+
+    <div id="results"></div>
+    <div id="foundryResult"></div>
+
+    <div class="section-divider">
+      <div class="section-divider-line"></div>
+      <div class="section-divider-label">Microsoft Work IQ</div>
+      <div class="section-divider-line"></div>
+    </div>
+
+    <div id="workiqConnectCard" class="ms-connect">
+      <div class="ms-label">⚡ Microsoft Work IQ</div>
+      <div class="ms-status" id="workiqStatus">Not connected — connect your Microsoft account to activate the 3 AI agents.</div>
+      <div id="workiqActions">
+        <a href="/auth/workiq" class="btn-ms">
+          <svg width="15" height="15" viewBox="0 0 23 23"><path fill="#f3f3f3" d="M0 0h11v11H0zm12 0h11v11H12zM0 12h11v11H0zm12 0h11v11H12z"/></svg>
+          Connect Microsoft Work IQ
+        </a>
+      </div>
+    </div>
+
+    <div id="agentsSection" style="display:none;">
+      <div class="card" style="padding:18px 22px;">
+        <div class="section-label text-blue" style="margin-bottom:12px;">Agent Pipeline</div>
+        <div class="pipeline">
+          <span class="pill" id="pill-sentinel">🔍 Sentinel</span>
+          <span class="pill-arrow">→</span>
+          <span class="pill" id="pill-executor">⚡ Executor</span>
+          <span class="pill-arrow">→</span>
+          <span class="pill" id="pill-protector">🛡️ Protector</span>
+        </div>
+        <button class="btn-agents" onclick="runAgents()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          Run Work IQ Agents
+        </button>
+      </div>
+
+      <div class="agent-card" id="agent-sentinel">
+        <div class="agent-label text-amber">🔍 Agent 1 — Sentinel <span class="text-muted">/ Work IQ Threat Analysis</span></div>
+        <div id="sentinel-body" class="text-sm text-muted">Waiting…</div>
+      </div>
+
+      <div class="agent-card" id="agent-executor">
+        <div class="agent-label text-teal">⚡ Agent 2 — Executor <span class="text-muted">/ Account Action Plan</span></div>
+        <div id="executor-body" class="text-sm text-muted">Waiting for Sentinel…</div>
+      </div>
+
+      <div class="agent-card" id="agent-protector">
+        <div class="agent-label text-red">🛡️ Agent 3 — Protector <span class="text-muted">/ Scam Warnings</span></div>
+        <div id="protector-body" class="text-sm text-muted">Waiting for Executor…</div>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    function escapeHtml(str) {
+      const d = document.createElement("div");
+      d.textContent = str || "";
+      return d.innerHTML;
+    }
+    function setPill(agent, state) {
+      const el = document.getElementById("pill-" + agent);
+      if (!el) return;
+      el.className = "pill " + state;
+    }
+    function setBody(agent, html) {
+      const el = document.getElementById(agent + "-body");
+      if (el) el.innerHTML = html;
+    }
+    function setStatus(html) { document.getElementById("status").innerHTML = html; }
+    function badgeHtml(risk) { return `<span class="badge ${risk}">${risk.toUpperCase()}</span>`; }
+    function findingHtml(meta, subject, body) {
+      return `<div class="finding">
+        <div class="finding-meta">${meta}</div>
+        <div class="finding-subject">${escapeHtml(subject)}</div>
+        <div class="finding-snippet">${body}</div>
+      </div>`;
+    }
+
+    async function init() {
+      const res = await fetch("/api/me");
+      if (!res.ok) { window.location.href = "/"; return; }
+      const data = await res.json();
+      document.getElementById("userEmail").textContent = data.profile.email;
+    }
+    async function logout() {
+      await fetch("/api/logout", { method: "POST" });
+      window.location.href = "/";
+    }
+
+    async function checkWorkIQ() {
+      const params = new URLSearchParams(window.location.search);
+      const res = await fetch("/api/workiq/status");
+      const data = await res.json();
+      if (data.connected) {
+        document.getElementById("workiqStatus").innerHTML =
+          `✅ Connected as <strong style="color:var(--text)">${escapeHtml(data.profile.email)}</strong> &nbsp;` +
+          `<button onclick="disconnectWorkIQ()" class="btn-sm" style="margin-left:4px;font-size:12px;">Disconnect</button>`;
+        document.getElementById("workiqActions").style.display = "none";
+        document.getElementById("agentsSection").style.display = "block";
+      }
+      if (params.get("workiq_error")) {
+        document.getElementById("workiqStatus").innerHTML =
+          `<span class="text-red">Connection failed: ${escapeHtml(params.get("workiq_error"))}. Check WORKIQ_CLIENT_ID and WORKIQ_CLIENT_SECRET in .env</span>`;
+      }
+      if (params.get("workiq") === "connected") {
+        document.getElementById("agentsSection").style.display = "block";
+      }
+    }
+    async function disconnectWorkIQ() {
+      await fetch("/api/workiq/logout", { method: "POST" });
+      window.location.reload();
+    }
+
+    async function runScan() {
+      const btn = document.getElementById("scanBtn");
+      btn.disabled = true;
+      setStatus('<span class="loading-dot"></span> Scanning your inbox…');
+      document.getElementById("results").innerHTML = "";
+      document.getElementById("foundryResult").innerHTML = "";
+
+      try {
+        const res = await fetch("/api/scan");
+        if (!res.ok) {
+          const err = await res.json();
+          setStatus(`<span class="text-red">Scan failed: ${escapeHtml(err.message || err.error)}</span>`);
+          btn.disabled = false; return;
+        }
+        const data = await res.json();
+        const time = new Date(data.scannedAt).toLocaleTimeString();
+        setStatus(`Scanned at ${time} — ${data.totalFound} security-related email(s) found`);
+
+        if (data.findings.length === 0) {
+          document.getElementById("results").innerHTML =
+            `<div class="card"><div class="empty"><div class="empty-icon">✅</div>No security alert emails found.<br>Your inbox looks clean.</div></div>`;
+          await analyzeWithFoundry(data.findings);
+          btn.disabled = false; return;
+        }
+
+        let html = `<div class="card"><div class="findings-header">Findings</div>`;
+        for (const f of data.findings) {
+          html += findingHtml(
+            `${badgeHtml(f.risk)} ${escapeHtml(f.from)} · ${escapeHtml(f.date)}`,
+            f.subject, escapeHtml(f.snippet)
+          );
+        }
+        html += `</div>`;
+        document.getElementById("results").innerHTML = html;
+        await analyzeWithFoundry(data.findings);
+      } catch (e) {
+        setStatus(`<span class="text-red">Error: ${escapeHtml(e.message)}</span>`);
+      }
+      btn.disabled = false;
+    }
+
+    async function analyzeWithFoundry(findings) {
+      const container = document.getElementById("foundryResult");
+      container.innerHTML = `<div class="card"><div class="foundry-label">⚡ Foundry IQ</div><span class="loading-dot"></span>&nbsp;<span class="text-sm text-sub">Analyzing findings…</span></div>`;
+
+      try {
+        const res = await fetch("/api/analyze", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ findings }),
+        });
+        if (res.status === 503) {
+          const err = await res.json();
+          container.innerHTML = `<div class="card"><div class="foundry-label">⚡ Foundry IQ</div><div class="text-sm text-muted">${escapeHtml(err.message)}</div></div>`;
+          return;
+        }
+        if (!res.ok) {
+          const err = await res.json();
+          container.innerHTML = `<div class="card"><div class="foundry-label">⚡ Foundry IQ</div><span class="text-red text-sm">Error: ${escapeHtml(err.message || err.error)}</span></div>`;
+          return;
+        }
+        const data = await res.json();
+        let html = `<div class="card">
+          <div class="foundry-label">⚡ Foundry IQ Analysis</div>
+          <div class="mb12">${badgeHtml(data.overallRiskLevel)}</div>
+          <div class="text-sm lh mb12" style="color:var(--text);">${escapeHtml(data.summary)}</div>`;
+        for (const item of (data.items || [])) {
+          html += findingHtml(
+            `${badgeHtml(item.riskLevel)} ${escapeHtml(item.subject)}`,
+            item.reasoning,
+            `<span class="text-green">✓ ${escapeHtml(item.recommendedAction)}</span>`
+          );
+        }
+        html += `</div>`;
+        container.innerHTML = html;
+      } catch (e) {
+        container.innerHTML = `<div class="card"><div class="foundry-label">⚡ Foundry IQ</div><span class="text-red text-sm">Request failed: ${escapeHtml(e.message)}</span></div>`;
+      }
+    }
+
+    async function runAgents() {
+      setPill("sentinel", "running");
+      setBody("sentinel", '<span class="text-teal text-sm">🔍 Sentinel scanning Microsoft inbox via Work IQ…</span>');
+      let sentinelResult = null;
+      try {
+        const r = await fetch("/api/agents/sentinel", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({}) });
+        sentinelResult = await r.json();
+        if (r.ok) {
+          let html = `<div class="mono text-blue mb8">Source: ${escapeHtml(sentinelResult.source)}</div>`;
+          html += `<div class="mb10">${badgeHtml(sentinelResult.overallRisk)}</div>`;
+          html += `<div class="text-sm lh mb12" style="color:var(--text);">${escapeHtml(sentinelResult.summary || "")}</div>`;
+          for (const t of (sentinelResult.threats || [])) {
+            html += findingHtml(`${badgeHtml(t.risk)} ${escapeHtml(t.from)}`, t.subject, escapeHtml(t.reason));
+          }
+          setBody("sentinel", html); setPill("sentinel", "done");
+        } else {
+          setBody("sentinel", `<span class="text-red text-sm">${escapeHtml(sentinelResult.message || sentinelResult.error)}</span>`);
+          setPill("sentinel", "error");
+        }
+      } catch (e) { setBody("sentinel", `<span class="text-red text-sm">${escapeHtml(e.message)}</span>`); setPill("sentinel", "error"); }
+
+      setPill("executor", "running");
+      setBody("executor", '<span class="text-teal text-sm">⚡ Executor building action plan via Work IQ…</span>');
+      try {
+        const r = await fetch("/api/agents/executor", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sentinelResult }) });
+        const d = await r.json();
+        if (r.ok) {
+          let html = `<div class="mono text-blue mb8">Source: ${escapeHtml(d.source)}</div>`;
+          html += `<div class="text-sm lh mb12" style="color:var(--text);">${escapeHtml(d.summary || "")}</div>`;
+          for (const a of (d.actions || [])) {
+            const pri = a.priority === "urgent" ? "high" : a.priority === "normal" ? "medium" : "low";
+            html += findingHtml(
+              `${badgeHtml(pri)} ${escapeHtml(a.platform)}`, a.action,
+              `<span class="mb4" style="display:block;">📄 ${escapeHtml(a.documentsNeeded)}</span>` +
+              `<a href="${escapeHtml(a.officialUrl)}" target="_blank" class="text-teal text-xs">${escapeHtml(a.officialUrl)}</a>`
+            );
+          }
+          setBody("executor", html); setPill("executor", "done");
+        } else { setBody("executor", `<span class="text-red text-sm">${escapeHtml(d.message || d.error)}</span>`); setPill("executor", "error"); }
+      } catch (e) { setBody("executor", `<span class="text-red text-sm">${escapeHtml(e.message)}</span>`); setPill("executor", "error"); }
+
+      setPill("protector", "running");
+      setBody("protector", '<span class="text-teal text-sm">🛡️ Protector scanning for scam patterns via Work IQ…</span>');
+      try {
+        const r = await fetch("/api/agents/protector", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sentinelResult }) });
+        const d = await r.json();
+        if (r.ok) {
+          const lvl = d.alertLevel === "high" ? "high" : d.alertLevel === "medium" ? "medium" : "low";
+          let html = `<div class="mono text-blue mb8">Source: ${escapeHtml(d.source)}</div>`;
+          html += `<div class="mb10">${badgeHtml(lvl)}</div>`;
+          html += `<div class="text-sm lh mb12" style="color:var(--text);">${escapeHtml(d.summary || "")}</div>`;
+          for (const s of (d.scamPatterns || [])) {
+            html += findingHtml(
+              `⚠️ ${escapeHtml(s.name)}`, s.description,
+              `<span class="text-amber" style="display:block;margin-bottom:3px;">🚩 ${escapeHtml(s.warningSign)}</span>` +
+              `<span class="text-green">✓ ${escapeHtml(s.howToAvoid)}</span>`
+            );
+          }
+          setBody("protector", html); setPill("protector", "done");
+        } else { setBody("protector", `<span class="text-red text-sm">${escapeHtml(d.message || d.error)}</span>`); setPill("protector", "error"); }
+      } catch (e) { setBody("protector", `<span class="text-red text-sm">${escapeHtml(e.message)}</span>`); setPill("protector", "error"); }
+    }
+
+    init();
+    checkWorkIQ();
+  </script>
+</body>
+</html>
