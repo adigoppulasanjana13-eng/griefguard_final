@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GriefGuard — Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:       #080C14;
+    --surface:  #0E1520;
+    --surface2: #121C2C;
+    --border:   #1E2E45;
+    --border2:  #243550;
+    --text:     #D4DDED;
+    --muted:    #5A6B85;
+    --accent:   #3D8BFF;
+    --green:    #10C98F;
+    --red:      #F05050;
+    --amber:    #F0A050;
+    --mono:     'JetBrains Mono', monospace;
+    --sans:     'Inter', -apple-system, sans-serif;
+  }
+
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    position: relative;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(61,139,255,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(61,139,255,0.025) 1px, transparent 1px);
+    background-size: 48px 48px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── Layout ── */
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(8,12,20,0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 28px;
+    height: 56px;
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: -0.2px;
+    color: #E8EFF8;
+  }
+  .logo svg { flex-shrink: 0; }
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .user-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 5px 12px;
+    font-size: 12.5px;
+    color: var(--muted);
+  }
+  .user-pill .dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--green);
+    flex-shrink: 0;
+  }
+  .user-email { color: var(--text); font-weight: 500; }
+
+  .btn-ghost {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 5px 12px;
+    border-radius: 8px;
+    font-size: 12.5px;
+    cursor: pointer;
+    font-family: var(--sans);
+    transition: border-color 0.15s, color 0.15s;
+  }
+  .btn-ghost:hover { border-color: var(--border2); color: var(--text); }
+
+  .main {
+    position: relative;
+    z-index: 1;
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 32px 24px 60px;
+  }
+
+  /* ── Section Labels ── */
+  .section-eyebrow {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .section-eyebrow::before {
+    content: '';
+    display: inline-block;
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+
+  /* ── Cards ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 22px 24px;
+    margin-bottom: 16px;
+  }
+  .card-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #E0E8F5;
+    margin-bottom: 6px;
+    letter-spacing: -0.1px;
+  }
+  .card-desc {
+    font-size: 12.5px;
+    color: var(--muted);
+    line-height: 1.65;
+    margin-bottom: 18px;
+  }
+
+  /* ── Primary scan button ── */
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    font-family: var(--sans);
+    transition: opacity 0.15s, transform 0.1s, box-shadow 0.15s;
+    letter-spacing: -0.1px;
+    box-shadow: 0 4px 20px rgba(61,139,255,0.25);
+  }
+  .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 6px 24px rgba(61,139,255,0.35); }
+  .btn-primary:active { transform: translateY(0); }
+  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  .btn-ms {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #0078D4;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    text-decoration: none;
+    font-family: var(--sans);
+    transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
+    box-shadow: 0 4px 16px rgba(0,120,212,0.3);
+  }
+  .btn-ms:hover { background: #006BBF; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,120,212,0.4); }
+  .btn-ms:active { transform: translateY(0); }
+
+  /* ── Status message ── */
+  .status-line {
+    margin-top: 12px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 20px;
+  }
+  .status-spinner {
+    width: 12px; height: 12px;
+    border: 2px solid rgba(61,139,255,0.2);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    flex-shrink: 0;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── Finding card ── */
+  .finding {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    background: rgba(14,21,32,0.6);
+    transition: border-color 0.15s;
+  }
+  .finding:hover { border-color: var(--border2); }
+  .finding:last-child { margin-bottom: 0; }
+  .finding-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    color: var(--muted);
+    font-family: var(--mono);
+    margin-bottom: 6px;
+    flex-wrap: wrap;
+  }
+  .finding-subject {
+    font-size: 13px;
+    font-weight: 600;
+    color: #C8D6EB;
+    margin-bottom: 5px;
+    letter-spacing: -0.1px;
+    line-height: 1.4;
+  }
+  .finding-snippet {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+  .finding-action {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+  }
+
+  /* ── Risk badges ── */
+  .badge {
+    font-family: var(--mono);
+    font-size: 9.5px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 4px;
+    flex-shrink: 0;
+  }
+  .badge-high    { background: rgba(240,80,80,0.12);   color: var(--red);   border: 1px solid rgba(240,80,80,0.25); }
+  .badge-medium  { background: rgba(240,160,80,0.12);  color: var(--amber); border: 1px solid rgba(240,160,80,0.25); }
+  .badge-low     { background: rgba(16,201,143,0.1);   color: var(--green); border: 1px solid rgba(16,201,143,0.2); }
+  .badge-urgent  { background: rgba(240,80,80,0.12);   color: var(--red);   border: 1px solid rgba(240,80,80,0.25); }
+  .badge-normal  { background: rgba(61,139,255,0.1);   color: var(--accent); border: 1px solid rgba(61,139,255,0.2); }
+
+  /* ── Overall risk banner ── */
+  .risk-banner {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 18px;
+    border-radius: 10px;
+    margin-bottom: 16px;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .risk-banner.high   { background: rgba(240,80,80,0.07);  border: 1px solid rgba(240,80,80,0.2);  }
+  .risk-banner.medium { background: rgba(240,160,80,0.07); border: 1px solid rgba(240,160,80,0.2); }
+  .risk-banner.low    { background: rgba(16,201,143,0.06); border: 1px solid rgba(16,201,143,0.15); }
+  .risk-banner-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .risk-banner.high .risk-banner-dot   { background: var(--red); }
+  .risk-banner.medium .risk-banner-dot { background: var(--amber); }
+  .risk-banner.low .risk-banner-dot    { background: var(--green); }
+
+  /* ── Empty state ── */
+  .empty-state {
+    text-align: center;
+    padding: 36px 20px;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.6;
+  }
+  .empty-state .empty-icon { font-size: 28px; margin-bottom: 12px; }
+  .empty-state strong { color: var(--green); display: block; font-size: 14px; margin-bottom: 4px; }
+
+  /* ── Work IQ Connected banner ── */
+  .workiq-connected {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .workiq-profile {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12.5px;
+  }
+  .workiq-avatar {
+    width: 28px; height: 28px;
+    border-radius: 6px;
+    background: linear-gradient(135deg, #0078D4, #005a9e);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+    font-family: var(--mono);
+  }
+
+  /* ── Agent pipeline ── */
+  .pipeline-track {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 18px;
+    background: rgba(14,21,32,0.7);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .pipeline-node {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-family: var(--mono);
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--muted);
+    transition: color 0.2s, border-color 0.2s, background 0.2s;
+  }
+  .pipeline-node.running {
+    color: var(--accent);
+    border-color: rgba(61,139,255,0.4);
+    background: rgba(61,139,255,0.07);
+  }
+  .pipeline-node.done {
+    color: var(--green);
+    border-color: rgba(16,201,143,0.35);
+    background: rgba(16,201,143,0.07);
+  }
+  .pipeline-node.error {
+    color: var(--red);
+    border-color: rgba(240,80,80,0.3);
+    background: rgba(240,80,80,0.06);
+  }
+  .pipeline-arrow { color: var(--border2); font-size: 14px; }
+
+  /* ── Agent cards ── */
+  .agent-card {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+  .agent-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 13px 18px;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+  }
+  .agent-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .agent-label.sentinel  { color: #F0A050; }
+  .agent-label.executor  { color: var(--green); }
+  .agent-label.protector { color: var(--red); }
+  .agent-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: #C8D6EB;
+    margin-left: auto;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .agent-body {
+    padding: 16px 18px;
+    background: var(--surface);
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+    min-height: 56px;
+  }
+
+  /* ── Source tag ── */
+  .source-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: #4A90D9;
+    background: rgba(61,139,255,0.07);
+    border: 1px solid rgba(61,139,255,0.15);
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-bottom: 12px;
+  }
+
+  /* ── Scam pattern card ── */
+  .scam-card {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 10px;
+    background: rgba(14,21,32,0.5);
+  }
+  .scam-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #C8D6EB;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .scam-desc { font-size: 12px; color: var(--muted); line-height: 1.6; margin-bottom: 8px; }
+  .scam-warn {
+    font-size: 11.5px;
+    color: var(--amber);
+    background: rgba(240,160,80,0.07);
+    border: 1px solid rgba(240,160,80,0.15);
+    border-radius: 6px;
+    padding: 7px 10px;
+    margin-bottom: 6px;
+    line-height: 1.5;
+  }
+  .scam-tip {
+    font-size: 11.5px;
+    color: var(--green);
+    background: rgba(16,201,143,0.06);
+    border: 1px solid rgba(16,201,143,0.15);
+    border-radius: 6px;
+    padding: 7px 10px;
+    line-height: 1.5;
+  }
+
+  /* ── Action item ── */
+  .action-item {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    background: rgba(14,21,32,0.5);
+  }
+  .action-platform {
+    font-size: 13px;
+    font-weight: 600;
+    color: #C8D6EB;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .action-desc { font-size: 12px; color: var(--muted); margin-bottom: 6px; line-height: 1.5; }
+  .action-docs {
+    font-size: 11.5px;
+    color: var(--muted);
+    background: var(--surface2);
+    border-radius: 6px;
+    padding: 6px 10px;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+  }
+  .action-docs span { color: var(--amber); flex-shrink: 0; }
+  .action-link {
+    font-size: 11.5px;
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    text-decoration: none;
+    padding: 6px 10px;
+    border-radius: 6px;
+    background: rgba(61,139,255,0.07);
+    border: 1px solid rgba(61,139,255,0.15);
+    margin-top: 4px;
+    transition: background 0.15s;
+    word-break: break-all;
+  }
+  .action-link:hover { background: rgba(61,139,255,0.12); }
+
+  /* ── Divider ── */
+  .section-divider {
+    height: 1px;
+    background: var(--border);
+    margin: 28px 0;
+    position: relative;
+  }
+  .section-divider::after {
+    content: attr(data-label);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--bg);
+    padding: 0 12px;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+
+  /* ── Error box ── */
+  .error-box {
+    background: rgba(240,80,80,0.07);
+    border: 1px solid rgba(240,80,80,0.2);
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 12.5px;
+    color: #E88080;
+    line-height: 1.5;
+  }
+
+  /* ── Page header ── */
+  .page-header {
+    margin-bottom: 28px;
+  }
+  .page-header h2 {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+    color: #E0E8F5;
+    margin-bottom: 4px;
+  }
+  .page-header p {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+</style>
+</head>
+<body>
+
+  <!-- Top bar -->
+  <div class="topbar">
+    <div class="logo">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+        <path d="M12 2L3 6.5V12C3 16.5 7 20.5 12 22C17 20.5 21 16.5 21 12V6.5L12 2Z" stroke="#3D8BFF" stroke-width="1.5" stroke-linejoin="round"/>
+        <path d="M9 12L11 14L15 10" stroke="#3D8BFF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      GriefGuard
+    </div>
+    <div class="topbar-right">
+      <div class="user-pill">
+        <span class="dot"></span>
+        <span class="user-email" id="userEmail">Loading…</span>
+      </div>
+      <button class="btn-ghost" onclick="logout()">Sign out</button>
+    </div>
+  </div>
+
+  <div class="main">
+
+    <div class="page-header">
+      <h2>Security Dashboard</h2>
+      <p>Scan your inbox, run the three AI agents, and get a complete estate protection plan.</p>
+    </div>
+
+    <!-- Gmail Scan Card -->
+    <div class="section-eyebrow">Step 1 — Gmail</div>
+    <div class="card">
+      <div class="card-title">Inbox Security Scan</div>
+      <div class="card-desc">Reads your Gmail for security alerts: new sign-ins, suspicious activity, and password reset attempts. Read-only — nothing is modified.</div>
+      <button class="btn-primary" onclick="runScan()" id="btnScan">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/><path d="M21 21L16.65 16.65" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        Scan My Inbox
+      </button>
+      <div class="status-line" id="scanStatus"></div>
+    </div>
+
+    <div id="gmailResults"></div>
+    <div id="foundryResult"></div>
+
+    <div class="section-divider" data-label="microsoft work iq"></div>
+
+    <!-- Microsoft Work IQ Card -->
+    <div class="section-eyebrow">Step 2 — Microsoft Work IQ</div>
+    <div class="card" id="workiqCard">
+      <div class="card-title">Connect Microsoft Account</div>
+      <div class="card-desc">Connect your Outlook / Microsoft account to activate the three AI agents. Any Microsoft account works — personal, work, or school.</div>
+      <div id="workiqContent">
+        <a class="btn-ms" href="/auth/workiq">
+          <svg width="15" height="15" viewBox="0 0 23 23">
+            <path fill="#f3f3f3" d="M0 0h11v11H0zm12 0h11v11H12zM0 12h11v11H0zm12 0h11v11H12z"/>
+          </svg>
+          Connect Microsoft Work IQ
+        </a>
+      </div>
+      <div id="workiqError" style="margin-top:12px;display:none;"></div>
+    </div>
+
+    <!-- Agent Pipeline (hidden until connected) -->
+    <div id="agentsSection" style="display:none;">
+
+      <div class="section-eyebrow" style="margin-top:24px;">Step 3 — AI Agents</div>
+
+      <!-- Pipeline tracker -->
+      <div class="pipeline-track">
+        <span id="pill-sentinel" class="pipeline-node">🔍 Sentinel</span>
+        <span class="pipeline-arrow">→</span>
+        <span id="pill-executor" class="pipeline-node">⚡ Executor</span>
+        <span class="pipeline-arrow">→</span>
+        <span id="pill-protector" class="pipeline-node">🛡️ Protector</span>
+      </div>
+
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-desc" style="margin-bottom:14px;">
+          Run all three agents in sequence. Sentinel scans threats → Executor builds the closure plan → Protector warns about scams.
+        </div>
+        <button class="btn-primary" onclick="runAgents()" id="btnAgents">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 3L19 12L5 21V3Z" fill="currentColor"/></svg>
+          Run Work IQ Agents
+        </button>
+      </div>
+
+      <!-- Sentinel -->
+      <div class="agent-card" id="agent-sentinel">
+        <div class="agent-header">
+          <span class="agent-label sentinel">Agent 1 — Sentinel</span>
+          <span class="agent-name">Threat Detection</span>
+        </div>
+        <div class="agent-body" id="sentinel-body">
+          <span style="color:var(--muted)">Waiting to run…</span>
+        </div>
+      </div>
+
+      <!-- Executor -->
+      <div class="agent-card" id="agent-executor">
+        <div class="agent-header">
+          <span class="agent-label executor">Agent 2 — Executor</span>
+          <span class="agent-name">Account Closure Plan</span>
+        </div>
+        <div class="agent-body" id="executor-body">
+          <span style="color:var(--muted)">Waiting for Sentinel…</span>
+        </div>
+      </div>
+
+      <!-- Protector -->
+      <div class="agent-card" id="agent-protector">
+        <div class="agent-header">
+          <span class="agent-label protector">Agent 3 — Protector</span>
+          <span class="agent-name">Scam Defence</span>
+        </div>
+        <div class="agent-body" id="protector-body">
+          <span style="color:var(--muted)">Waiting for Executor…</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    function esc(str) {
+      const d = document.createElement('div');
+      d.textContent = str || '';
+      return d.innerHTML;
+    }
+
+    function setPill(agent, state) {
+      const el = document.getElementById('pill-' + agent);
+      if (!el) return;
+      el.className = 'pipeline-node' + (state ? ' ' + state : '');
+    }
+
+    function setBody(agent, html) {
+      const el = document.getElementById(agent + '-body');
+      if (el) el.innerHTML = html;
+    }
+
+    function spinner(msg) {
+      return `<div style="display:flex;align-items:center;gap:8px;color:var(--accent)">
+        <div class="status-spinner"></div>
+        <span style="font-size:13px;">${esc(msg)}</span>
+      </div>`;
+    }
+
+    function riskClass(risk) {
+      if (!risk) return 'low';
+      const r = risk.toLowerCase();
+      if (r === 'high' || r === 'urgent') return 'high';
+      if (r === 'medium' || r === 'normal') return 'medium';
+      return 'low';
+    }
+
+    // ── Init ──
+    async function init() {
+      try {
+        const res = await fetch('/api/me');
+        if (!res.ok) { window.location.href = '/'; return; }
+        const data = await res.json();
+        document.getElementById('userEmail').textContent = data.profile.email;
+      } catch(e) { window.location.href = '/'; }
+      checkWorkIQ();
+    }
+
+    async function logout() {
+      await fetch('/api/logout', { method: 'POST' });
+      window.location.href = '/';
+    }
+
+    // ── Work IQ ──
+    async function checkWorkIQ() {
+      const params = new URLSearchParams(window.location.search);
+      try {
+        const res = await fetch('/api/workiq/status');
+        const data = await res.json();
+        if (data.connected) {
+          showWorkIQConnected(data.profile);
+        }
+      } catch(e) {}
+
+      if (params.get('workiq_error')) {
+        const errEl = document.getElementById('workiqError');
+        errEl.style.display = 'block';
+        errEl.innerHTML = `<div class="error-box">Connection failed: ${esc(params.get('workiq_error'))}. Check WORKIQ_CLIENT_ID and WORKIQ_CLIENT_SECRET in .env</div>`;
+      }
+      if (params.get('workiq') === 'connected') {
+        // Reload without query params to clean URL
+        const url = new URL(window.location.href);
+        url.search = '';
+        window.history.replaceState({}, '', url);
+      }
+    }
+
+    function showWorkIQConnected(profile) {
+      const initials = (profile.name || profile.email || '?')
+        .split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+      document.getElementById('workiqContent').innerHTML = `
+        <div class="workiq-connected">
+          <div class="workiq-profile">
+            <div class="workiq-avatar">${esc(initials)}</div>
+            <div>
+              <div style="font-size:13px;font-weight:600;color:#C8D6EB;">${esc(profile.name || profile.email)}</div>
+              <div style="font-size:11.5px;color:var(--muted);">${esc(profile.email)}</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:11px;color:var(--green);font-family:var(--mono);background:rgba(16,201,143,0.08);border:1px solid rgba(16,201,143,0.2);padding:3px 10px;border-radius:4px;">● CONNECTED</span>
+            <button onclick="disconnectWorkIQ()" class="btn-ghost">Disconnect</button>
+          </div>
+        </div>`;
+      document.getElementById('agentsSection').style.display = 'block';
+    }
+
+    async function disconnectWorkIQ() {
+      await fetch('/api/workiq/logout', { method: 'POST' });
+      window.location.reload();
+    }
+
+    // ── Gmail Scan ──
+    async function runScan() {
+      const btn = document.getElementById('btnScan');
+      const statusEl = document.getElementById('scanStatus');
+      const resultsEl = document.getElementById('gmailResults');
+      const foundryEl = document.getElementById('foundryResult');
+
+      btn.disabled = true;
+      statusEl.innerHTML = `<div class="status-spinner"></div><span style="color:var(--accent);font-size:12px;">Scanning inbox…</span>`;
+      resultsEl.innerHTML = '';
+      foundryEl.innerHTML = '';
+
+      try {
+        const res = await fetch('/api/scan');
+        if (!res.ok) {
+          const err = await res.json();
+          if (res.status === 401 && err.error === 'session_expired') {
+            statusEl.innerHTML = `<span style="color:var(--red);font-size:12px;">Session expired. <a href="/" style="color:var(--accent)">Sign in again</a>.</span>`;
+            btn.disabled = false;
+            return;
+          }
+          statusEl.innerHTML = `<span style="color:var(--red);font-size:12px;">Scan failed: ${esc(err.message || err.error)}</span>`;
+          btn.disabled = false;
+          return;
+        }
+        const data = await res.json();
+        statusEl.innerHTML = `<span style="color:var(--green);font-size:12px;">✓ Scanned at ${new Date(data.scannedAt).toLocaleTimeString()} — ${data.totalFound} email(s) found</span>`;
+
+        if (data.findings.length === 0) {
+          resultsEl.innerHTML = `<div class="card">
+            <div class="empty-state">
+              <div class="empty-icon">✅</div>
+              <strong>Inbox looks clean</strong>
+              No security alert emails found in your Gmail.
+            </div>
+          </div>`;
+        } else {
+          let html = `<div class="card"><div class="card-title" style="margin-bottom:14px;">Gmail Findings</div>`;
+          for (const f of data.findings) {
+            const rc = riskClass(f.risk);
+            html += `<div class="finding">
+              <div class="finding-meta">
+                <span class="badge badge-${rc}">${esc(f.risk).toUpperCase()}</span>
+                <span>${esc(f.from)}</span>
+                <span style="margin-left:auto;">${esc(f.date)}</span>
+              </div>
+              <div class="finding-subject">${esc(f.subject)}</div>
+              <div class="finding-snippet">${esc(f.snippet)}</div>
+            </div>`;
+          }
+          html += '</div>';
+          resultsEl.innerHTML = html;
+        }
+
+        analyzeWithFoundry(data.findings);
+      } catch(e) {
+        statusEl.innerHTML = `<span style="color:var(--red);font-size:12px;">Error: ${esc(e.message)}</span>`;
+      }
+      btn.disabled = false;
+    }
+
+    async function analyzeWithFoundry(findings) {
+      const el = document.getElementById('foundryResult');
+      el.innerHTML = `<div class="card">${spinner('Foundry IQ analyzing findings…')}</div>`;
+      try {
+        const res = await fetch('/api/analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ findings }),
+        });
+        if (res.status === 503) {
+          const err = await res.json();
+          el.innerHTML = `<div class="card">
+            <div class="section-eyebrow" style="margin-bottom:10px;">Foundry IQ</div>
+            <div style="font-size:12.5px;color:var(--muted);">${esc(err.message)}</div>
+          </div>`;
+          return;
+        }
+        if (!res.ok) {
+          const err = await res.json();
+          el.innerHTML = `<div class="card"><div class="error-box">Foundry IQ error: ${esc(err.message || err.error)}</div></div>`;
+          return;
+        }
+        const data = await res.json();
+        const rc = riskClass(data.overallRiskLevel);
+        let html = `<div class="card">
+          <div class="section-eyebrow" style="margin-bottom:12px;">Foundry IQ Analysis</div>
+          <div class="risk-banner ${rc}">
+            <div class="risk-banner-dot"></div>
+            <div>
+              <div style="font-weight:600;color:#C8D6EB;margin-bottom:2px;">${(data.overallRiskLevel||'').toUpperCase()} RISK</div>
+              <div style="font-size:12.5px;color:var(--muted);">${esc(data.summary)}</div>
+            </div>
+          </div>`;
+        for (const item of (data.items || [])) {
+          const irc = riskClass(item.riskLevel);
+          html += `<div class="finding">
+            <div class="finding-meta"><span class="badge badge-${irc}">${(item.riskLevel||'').toUpperCase()}</span>${esc(item.subject)}</div>
+            <div class="finding-snippet" style="margin-bottom:6px;">${esc(item.reasoning)}</div>
+            <div class="finding-snippet" style="color:var(--green);">✓ ${esc(item.recommendedAction)}</div>
+          </div>`;
+        }
+        html += '</div>';
+        el.innerHTML = html;
+      } catch(e) {
+        el.innerHTML = `<div class="card"><div class="error-box">Foundry IQ request failed: ${esc(e.message)}</div></div>`;
+      }
+    }
+
+    // ── Agents ──
+    async function runAgents() {
+      const btn = document.getElementById('btnAgents');
+      btn.disabled = true;
+
+      // Agent 1: Sentinel
+      setPill('sentinel', 'running');
+      setBody('sentinel', spinner('Scanning Microsoft inbox via Work IQ…'));
+
+      let sentinelResult = null;
+      try {
+        const r = await fetch('/api/agents/sentinel', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({}),
+        });
+        sentinelResult = await r.json();
+        if (r.status === 401) {
+          const errMsg = sentinelResult.error === 'workiq_session_expired'
+            ? 'Microsoft session expired. Please <a href="/auth/workiq" style="color:var(--accent)">reconnect Work IQ</a>.'
+            : 'Not connected. Please connect Microsoft Work IQ above.';
+          setBody('sentinel', `<div class="error-box">${errMsg}</div>`);
+          setPill('sentinel', 'error');
+          setPill('executor', '');
+          setPill('protector', '');
+          btn.disabled = false;
+          return;
+        }
+        if (r.ok) {
+          const rc = riskClass(sentinelResult.overallRisk);
+          let html = `<div class="source-tag">⚡ ${esc(sentinelResult.source)}</div>
+            <div class="risk-banner ${rc}">
+              <div class="risk-banner-dot"></div>
+              <div>
+                <div style="font-weight:600;color:#C8D6EB;margin-bottom:2px;">${(sentinelResult.overallRisk||'').toUpperCase()} RISK</div>
+                <div style="font-size:12.5px;color:var(--muted);">${esc(sentinelResult.summary)}</div>
+              </div>
+            </div>`;
+          for (const t of (sentinelResult.threats || [])) {
+            const tc = riskClass(t.risk);
+            html += `<div class="finding">
+              <div class="finding-meta"><span class="badge badge-${tc}">${esc(t.risk).toUpperCase()}</span>${esc(t.from)}</div>
+              <div class="finding-subject">${esc(t.subject)}</div>
+              <div class="finding-snippet">${esc(t.reason)}</div>
+            </div>`;
+          }
+          if (!sentinelResult.threats || sentinelResult.threats.length === 0) {
+            html += `<div class="empty-state" style="padding:20px 0;"><strong>No threats detected</strong>Your Microsoft inbox looks clean.</div>`;
+          }
+          setBody('sentinel', html);
+          setPill('sentinel', 'done');
+        } else {
+          setBody('sentinel', `<div class="error-box">${esc(sentinelResult.message || sentinelResult.error)}</div>`);
+          setPill('sentinel', 'error');
+        }
+      } catch(e) {
+        setBody('sentinel', `<div class="error-box">${esc(e.message)}</div>`);
+        setPill('sentinel', 'error');
+      }
+
+      // Agent 2: Executor
+      setPill('executor', 'running');
+      setBody('executor', spinner('Building account closure plan…'));
+      try {
+        const r = await fetch('/api/agents/executor', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sentinelResult }),
+        });
+        const d = await r.json();
+        if (r.ok) {
+          let html = `<div class="source-tag">⚡ ${esc(d.source)}</div>
+            <div style="font-size:13px;color:var(--muted);margin-bottom:16px;">${esc(d.summary)}</div>`;
+          for (const a of (d.actions || [])) {
+            const pc = a.priority === 'urgent' ? 'high' : 'medium';
+            html += `<div class="action-item">
+              <div class="action-platform">
+                ${esc(a.platform)}
+                <span class="badge badge-${pc}" style="margin-left:auto;">${(a.priority||'').toUpperCase()}</span>
+              </div>
+              <div class="action-desc">${esc(a.action)}</div>
+              <div class="action-docs"><span>📄</span> ${esc(a.documentsNeeded)}</div>
+              <a class="action-link" href="${esc(a.officialUrl)}" target="_blank" rel="noopener">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                ${esc(a.officialUrl)}
+              </a>
+            </div>`;
+          }
+          if (!d.actions || d.actions.length === 0) {
+            html += `<div class="empty-state" style="padding:20px 0;"><strong>No actions needed</strong>No platform closures identified.</div>`;
+          }
+          setBody('executor', html);
+          setPill('executor', 'done');
+        } else {
+          setBody('executor', `<div class="error-box">${esc(d.message || d.error)}</div>`);
+          setPill('executor', 'error');
+        }
+      } catch(e) {
+        setBody('executor', `<div class="error-box">${esc(e.message)}</div>`);
+        setPill('executor', 'error');
+      }
+
+      // Agent 3: Protector
+      setPill('protector', 'running');
+      setBody('protector', spinner('Identifying scam patterns…'));
+      try {
+        const r = await fetch('/api/agents/protector', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sentinelResult }),
+        });
+        const d = await r.json();
+        if (r.ok) {
+          const ac = riskClass(d.alertLevel);
+          let html = `<div class="source-tag">⚡ ${esc(d.source)}</div>
+            <div class="risk-banner ${ac}" style="margin-bottom:16px;">
+              <div class="risk-banner-dot"></div>
+              <div>
+                <div style="font-weight:600;color:#C8D6EB;margin-bottom:2px;">${(d.alertLevel||'').toUpperCase()} ALERT LEVEL</div>
+                <div style="font-size:12.5px;color:var(--muted);">${esc(d.summary)}</div>
+              </div>
+            </div>`;
+          for (const s of (d.scamPatterns || [])) {
+            html += `<div class="scam-card">
+              <div class="scam-title">⚠️ ${esc(s.name)}</div>
+              <div class="scam-desc">${esc(s.description)}</div>
+              <div class="scam-warn">🚩 Warning sign: ${esc(s.warningSign)}</div>
+              <div class="scam-tip">✓ How to avoid: ${esc(s.howToAvoid)}</div>
+            </div>`;
+          }
+          setBody('protector', html);
+          setPill('protector', 'done');
+        } else {
+          setBody('protector', `<div class="error-box">${esc(d.message || d.error)}</div>`);
+          setPill('protector', 'error');
+        }
+      } catch(e) {
+        setBody('protector', `<div class="error-box">${esc(e.message)}</div>`);
+        setPill('protector', 'error');
+      }
+
+      btn.disabled = false;
+    }
+
+    init();
+  </script>
+</body>
+</html>
