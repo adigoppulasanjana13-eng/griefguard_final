@@ -11,6 +11,7 @@ Scans real inboxes for security threats, generates account closure plans, and wa
 
 **👉 https://griefguard-final.onrender.com**
 Demo mail:"adigoppulasanjana13@gmail.com"
+if it says Scan failed: Insufficient Permission please run locally
 
 > Just open the link, sign in with Google — no setup needed for judges.
 
